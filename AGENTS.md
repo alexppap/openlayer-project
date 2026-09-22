@@ -3,21 +3,21 @@
 AI 助手在本项目工作的规范。设计文档：`docs/superpowers/specs/2026-09-22-openlayers-factory-prototype-design.md`。
 
 <!-- TRELLIS:START -->
-# Trellis Instructions
+# Trellis 使用说明
 
-These instructions are for AI assistants working in this project.
+以下说明供在本项目中工作的 AI 助手使用：
 
-Use the `/trellis:start` command when starting a new session to:
-- Initialize your developer identity
-- Understand current project context
-- Read relevant guidelines
+开始新会话时使用 `/trellis:start` 命令：
+- 初始化你的开发者身份
+- 了解当前项目上下文
+- 阅读相关指南
 
-Use `@/.trellis/` to learn:
-- Development workflow (`workflow.md`)
-- Project structure guidelines (`spec/`)
-- Developer workspace (`workspace/`)
+通过 `@/.trellis/` 目录了解：
+- 开发工作流（`workflow.md`）
+- 项目结构规范（`spec/`）
+- 开发者工作区（`workspace/`）
 
-Keep this managed block so 'trellis update' can refresh the instructions.
+请保留此受管代码块，以便 `trellis update` 可以刷新其中的说明。
 
 <!-- TRELLIS:END -->
 
