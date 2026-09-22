@@ -14,12 +14,14 @@
 
 | 项 | 选择 | 理由 |
 |---|---|---|
-| 框架 | Vue 3（`<script setup>`）+ Vite 5 | 与用户已有 my-ol 项目习惯一致 |
+| 框架 | Vue 3.5.16（`<script setup>`）+ Vite 5 | 项目规范（AGENTS.md）指定 |
 | 语言 | 纯 JavaScript | 原型速度优先，用户熟悉 |
+| 样式 | SCSS（组件内 scoped + 全局 _variables.scss） | 项目规范指定 |
 | 地图库 | ol 10.x | 项目本体 |
 | 底图 | OpenStreetMap（XYZ，EPSG:3857） | 用户指定；需外网，失败有提示降级 |
-| 状态管理 | 不引 Pinia | 单页原型，composable 内聚足够 |
-| UI 库 | 不引 | 手写少量样式，保持精简 |
+| 状态管理 | 不引 Pinia | 跨组件状态由 composable 单例内聚 |
+| UI 组件库 | 不引 | 样式手写 SCSS，地图原型保持轻量 |
+| 包管理 | pnpm | 项目规范指定 |
 | 路由 | 不引 | 单页面 |
 
 **坐标系约定**：地图视图 EPSG:3857（OL 默认）；业务数据与 GeoJSON 统一存 EPSG:4326，转换收敛在 `map/utils.js`（`fromLonLat` / `toLonLat`）。
@@ -44,7 +46,7 @@
 src/
 ├── main.js
 ├── App.vue                  # 布局骨架 + mode 交互互斥状态
-├── styles/                  # 全局样式
+├── styles/                  # index.scss、_variables.scss（SCSS 变量/混入）
 ├── constants.js             # 报警等级色、区域类型色、枚举
 ├── map/
 │   ├── mapCore.js           # Map/View/OSM 底图初始化，全站唯一实例
@@ -124,7 +126,7 @@ App 维护全局 `mode`：`pan` | `drawZone` | `editZone` | `measureLine` | `mea
 
 - zones 中 `properties.fence: true` 的区域（危险品区）为禁区。
 - 实时模式下每次车辆位置更新：对每辆车 × 每个禁区做 `Polygon.containsXY`（EPSG:3857 投影坐标）判断；状态机记录「车在区内/区外」，**进入瞬间**触发一次报警（不重复），离开时恢复正常。围栏报警走 `alarmsApi.addAlarm()`，与报警列表/徽标/联动全套自动打通。
-- 纯逻辑（进出状态机）抽为纯函数，便于 `npm run verify` 断言。
+- 纯逻辑（进出状态机）抽为纯函数，便于 `pnpm run verify` 断言。
 
 ### 4.6 测量（useMeasure）
 
@@ -138,15 +140,15 @@ App 维护全局 `mode`：`pan` | `drawZone` | `editZone` | `measureLine` | `mea
 
 ## 5. 错误处理
 
-- **api 层**：所有方法返回 Promise；组件侧统一 catch → 顶部消息条提示。mock 永不 reject；将来 HTTP 实现内部处理超时/非 2xx，转 reject。
+- **api 层**：所有方法返回 Promise；组件侧统一 try-catch → App 级自定义顶部通知条提示（不引 UI 库，不用任何 Message 组件）+ `console.error`。mock 永不 reject；将来 HTTP 实现内部处理超时/非 2xx，转 reject。
 - **底图**：监听 `tileloaderror` 计数，连续失败 ≥ 5 次时顶部提示「底图加载不畅，请检查外网连接」；矢量功能不受影响（数据独立于底图）。
 - **数据防御**：报警/设备坐标非法（NaN/越界）静默过滤；轨迹点 < 2 时禁用回放按钮并提示；`saveZones` 写 localStorage 失败（隐私模式等）捕获后提示「保存失败，刷新后编辑将丢失」，不阻断当前会话。
 
 ## 6. 验证方式
 
-- **纯逻辑自测**：mock 生成器与围栏状态机中的纯函数（轨迹插值、速度染色分段、进出判断、徽标数字格式化）抽为纯函数，`npm run verify`（node 原生断言脚本，无测试框架）覆盖。
+- **纯逻辑自测**：mock 生成器与围栏状态机中的纯函数（轨迹插值、速度染色分段、进出判断、徽标数字格式化）抽为纯函数，`pnpm run verify`（node 原生断言脚本，无测试框架）覆盖。
 - **手动验收清单**（实现完成后浏览器逐项过 + 截图）：
-  1. `npm run dev` 启动，OSM 底图正常显示。
+  1. `pnpm dev` 启动，OSM 底图正常显示。
   2. 厂区四类区域渲染正确、可绘制新区域、可编辑顶点、刷新后保留、可导出 GeoJSON。
   3. 报警：缩小地图聚合点显示总条数；放大出单点徽标；弹窗可标记处理且徽标/列表同步；列表点选定位地图、地图点选高亮列表。
   4. 轨迹：三车切换正常；回放播放/暂停/拖动/倍速可用；车头方向正确；轨迹按速度染色；统计数值合理。
@@ -159,6 +161,7 @@ App 维护全局 `mode`：`pan` | `drawZone` | `editZone` | `measureLine` | `mea
 ## 7. 决策记录
 
 - 选单页监控台而非多路由示例集：电子围栏、列表-地图联动需要跨功能共存。
-- 不引 Pinia / Router / UI 库 / turf：单页原型足够，减少依赖面；围栏判断用 OL 自带 `containsXY`。
+- Vue 3.5.16 + SCSS + pnpm：项目规范（AGENTS.md）指定；代码风格（具名导出、const 箭头函数、handle 前缀、函数式数组操作等）一律遵循 AGENTS.md。
+- 不引 Pinia / Router / UI 库 / turf：单页原型足够，减少依赖面；跨组件状态用 composable 单例内聚；围栏判断用 OL 自带 `containsXY`。
 - 纯 JS 而非 TS：用户习惯（my-ol 同栈），原型速度优先；接入真实后端时再评估迁移。
 - mock 推送用 `setInterval` 模拟，接口形态按 WebSocket 设计（`subscribe(cb)` 返回取消函数），保证替换成本最低。
