@@ -101,7 +101,7 @@ App 维护全局 `mode`：`pan` | `drawZone` | `editZone` | `measureLine` | `mea
 
 ### 4.2 报警（useAlarms）
 
-- **数据结构**：`{ id, deviceId, deviceName, lng, lat, type, level: 'critical'|'major'|'minor', count, time, status: 'pending'|'acked' }`。等级配色在 constants（紧急红/重要橙/一般黄）。
+- **数据结构**：`{ id, deviceId, deviceName, lng, lat, type, level: 'critical'|'major'|'minor', time, status: 'pending'|'acked' }`。一条记录 = 一次报警事件；等级配色在 constants（紧急红/重要橙/一般黄）。**条数口径**：单点徽标 = 该位置 `pending` 记录数；聚合点徽标 = 聚合内所有点 `pending` 记录数之和。
 - **聚合**：`ol/source/Cluster`（distance 60px）。聚合点样式：等级色圆 + **聚合内总报警条数**徽标；非聚合单点：设备图标 + 该位置未处理条数小徽标。徽标图标由 `map/utils.js` 用 canvas 动态生成（数字长度自适应）。
 - **详情弹窗**：点击非聚合点 → AlarmPopup（Overlay 贴图）：该位置报警明细列表（时间/类型/等级/条数），每条可「标记处理」→ `alarmsApi.ackAlarm(id)` → 徽标与右侧列表同步更新。
 - **列表-地图联动**：AlarmPanel 行点击 → `flyTo` 定位 + 点位高亮（放大脉冲样式）；地图点位点击 → 列表滚动到对应行并高亮。
@@ -112,8 +112,8 @@ App 维护全局 `mode`：`pan` | `drawZone` | `editZone` | `measureLine` | `mea
 - **mock 数据**：3 辆车，各一条沿厂区道路的路线；轨迹生成器为纯函数：给定路线控制点 + 速度曲线，按时间插值出带时间戳的轨迹点序列。其中 1 辆的路线故意穿越危险品区（服务 4.5 围栏演示）。
 - **多车切换**：VehiclePanel 车辆列表（不同颜色车图标），单选当前车；其他车以淡显方式保留在图上（可图层树关掉）。
 - **历史回放**：选车 + 时间段（mock 提供 08:00–18:00 数据）→ 轨迹线渲染；已走过段实线、未走段淡虚线（两个动态分段 Feature 实现）；播放器：播放/暂停、进度条拖动、1×/2×/4×/8×/16× 倍速；车头图标按行进方向旋转（`rotation` 属性 + 累计角度）。
-- **染色统计**：轨迹按速度分段着色（快红慢绿，分段阈值入 constants）；面板统计：总里程 / 总时长 / 平均速度 / 最高速度（`ol/sphere.getLength` 累计 + 时间差）。
-- **实时模式**：`subscribePositions` 每 2s 推送当前车位置（mock 沿路线推进），车辆平滑移动，尾迹保留最近 N 个点（渐隐）。
+- **染色统计**：**已走过段**按速度分段着色（快红慢绿，分段阈值入 constants），未走段保持淡虚线；面板统计：总里程 / 总时长 / 平均速度 / 最高速度（`ol/sphere.getLength` 累计 + 时间差）。
+- **实时模式**：`subscribePositions` 每 2s 推送当前车位置（mock 沿路线推进），车辆平滑移动，尾迹保留最近 30 个点（透明度渐隐）。
 
 ### 4.4 设备点位（useDevices）
 
