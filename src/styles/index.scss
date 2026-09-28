@@ -1,0 +1,79 @@
+// src/styles/index.scss — 全局样式入口（reset + 基础排版）
+// 组件内如需变量，在各自 scoped style 里按文件层级写相对路径 @use 变量模块：
+//   src/ 直下文件用 @use './styles/variables' as *；
+//   src/components/、src/composables/ 等子目录用 @use '../../styles/variables' as *。
+// 不用 '@' 别名：sass 编译器不认 vite 的 resolve 别名，统一相对路径规避解析差异。
+@use 'variables' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    'PingFang SC',
+    'Microsoft YaHei',
+    'Segoe UI',
+    Arial,
+    sans-serif;
+  font-size: 14px;
+  color: $text-primary;
+  background: $bg;
+  -webkit-font-smoothing: antialiased;
+  @include thin-scrollbar;
+}
+
+// ---- 报警选中高亮脉冲环（useAlarms 经 OL Overlay 挂载的全局动画类，设计 §4.2 L109）----
+// ★双层结构（ol 定位机制约束）：ol Overlay 唯一定位手段是给 element 写内联
+// transform（Overlay.js updateRenderedPosition_：translate(posX,posY) translate(x,y)），
+// 而运行中的 CSS 动画优先级高于内联样式（CSS Animations Level 1 级联）——
+// 动画 transform 若落在外层 element 上会整体覆盖 ol 的定位平移，环恒错位在
+// 视口左上角。因此：
+//   外层 .alarm-pulse-ring-anchor：0 尺寸锚点，只承接 ol 的内联 transform 定位；
+//   内层 .alarm-pulse-ring：absolute 挂在锚点上跑 transform 动画，
+//     keyframes 自带 translate(-50%,-50%) 使环心对准 0 尺寸锚点。
+// pointer-events: none —— 动画环不拦截地图交互。
+.alarm-pulse-ring-anchor {
+  position: relative; // 内层 absolute 的定位参照
+  width: 0;
+  height: 0;
+}
+
+@keyframes alarm-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.55);
+    opacity: 0.9;
+  }
+
+  70% {
+    transform: translate(-50%, -50%) scale(1.7);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1.7);
+    opacity: 0;
+  }
+}
+
+.alarm-pulse-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 46px;
+  border: 3px solid $alarm-critical;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: alarm-pulse 1.5s ease-out infinite;
+}

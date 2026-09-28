@@ -1,0 +1,67 @@
+// src/styles/_variables.scss — 全局 SCSS 变量与混入
+// ★ 色值与 src/constants.js 一一对应（本文件供面板 UI、constants.js 供地图渲染）：
+//   修改任一处必须同步另一处。报警/区域/速度色见下方对应分组注释。
+
+// ---- 布局尺寸（设计 §3.1 监控台三栏布局）----
+$toolbar-height: 48px;
+$sidebar-left-width: 260px;
+$sidebar-right-width: 320px;
+
+// ---- 中性色板 ----
+$bg: #f0f2f5;
+$panel-bg: #ffffff;
+$border-color: #e5e6eb;
+$text-primary: #1f2329;
+$text-secondary: #8f959e;
+
+// ---- 报警等级色（对应 constants.js ALARM_LEVEL_CONFIG）----
+$alarm-critical: #f5222d; // 紧急
+$alarm-major: #fa8c16; // 重要
+$alarm-minor: #fadb14; // 一般
+
+// ---- 区域类型色（对应 constants.js ZONE_TYPE_CONFIG）----
+$zone-production: #1890ff; // 生产区
+$zone-warehouse: #52c41a; // 仓储区
+$zone-office: #8c8c8c; // 办公区
+$zone-danger: #f5222d; // 危险品区（围栏禁区）
+
+// ---- 速度染色色（对应 constants.js SPEED_COLOR_STOPS，快红慢绿）----
+$speed-slow: #52c41a;
+$speed-mid: #fadb14;
+$speed-fast: #fa8c16;
+$speed-fastest: #f5222d;
+
+// ---- 通知条（App 级顶部通知，对应 composables/useNotice.js 的四类 type）----
+$notice-info: #1890ff;
+$notice-success: #52c41a;
+$notice-warning: #fa8c16;
+$notice-error: #f5222d;
+$notice-z-index: 1000; // 悬浮于工具栏/面板/地图之上
+
+// ---- 混入 ----
+
+// 面板通用外观：白底 + 细边框 + 小圆角
+@mixin panel {
+  background: $panel-bg;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+}
+
+// 细滚动条（Firefox 与 WebKit 双轨）
+@mixin thin-scrollbar {
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

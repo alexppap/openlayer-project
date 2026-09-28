@@ -1,0 +1,20 @@
+{
+  "name": "openlayers-factory-prototype",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "verify": "node scripts/verify.js"
+  },
+  "dependencies": {
+    "ol": "^10.10.0",
+    "vue": "3.5.16"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "sass": "^1.104.1",
+    "vite": "^5.4.21"
+  }
+}
